@@ -1,0 +1,12 @@
+body { font-family: Arial, sans-serif; max-width: 1000px; margin: 0 auto; padding: 24px; line-height: 1.5; }
+header { display:flex; justify-content:space-between; border-bottom:1px solid #ccc; padding-bottom:12px; margin-bottom:24px; }
+a { text-decoration:none; }
+form { display:flex; flex-direction:column; gap:12px; max-width:900px; }
+input { padding:7px; margin-left:8px; }
+button { width:max-content; padding:7px 12px; }
+.item-row { display:flex; gap:8px; margin-bottom:8px; }
+.denom-row { display:flex; width:180px; justify-content:space-between; margin:4px 0; }
+table { border-collapse:collapse; width:100%; margin:16px 0; }
+th, td { border:1px solid #bbb; padding:8px; text-align:left; }
+.totals { margin-top:20px; line-height:2; }
+.error { color:#b00020; min-height:1em; }

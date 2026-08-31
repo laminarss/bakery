@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+{% block title %}Products{% endblock %}
+{% block content %}
+<h1>Product Management</h1>
+<form id="product-form">
+  <label>Product ID <input id="product-id" required></label>
+  <label>Name <input id="name" required></label>
+  <label>Available Stock <input id="stock" type="number" min="0" required></label>
+  <label>Unit Price <input id="price" type="number" min="0" step="0.01" required></label>
+  <label>Tax % <input id="tax" type="number" min="0" max="100" step="0.01" required></label>
+  <button type="submit">Add Product</button>
+</form>
+<p id="error" class="error"></p>
+<h2>Products</h2>
+<table><thead><tr><th>ID</th><th>Name</th><th>Stock</th><th>Unit Price</th><th>Tax %</th><th></th></tr></thead><tbody id="product-list"></tbody></table>
+<script>
+const esc = value => String(value).replace(/[&<>\"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','\"':'&quot;',"'":'&#39;'}[c]));
+async function loadProducts() {
+  const response = await fetch('/api/products');
+  const products = await response.json();
+  document.getElementById('product-list').innerHTML = products.map(p => `<tr><td>${esc(p.product_id)}</td><td>${esc(p.name)}</td><td>${p.available_stock}</td><td>₹${p.unit_price}</td><td>${p.tax_percentage}%</td><td><button onclick="removeProduct('${encodeURIComponent(p.product_id)}')">Delete</button></td></tr>`).join('');
+}
+async function removeProduct(id) {
+  const response = await fetch(`/api/products/${decodeURIComponent(id)}`, {method:'DELETE'});
+  if (!response.ok) document.getElementById('error').textContent = (await response.json()).detail || 'Delete failed';
+  await loadProducts();
+}
+document.getElementById('product-form').onsubmit = async e => {
+  e.preventDefault();
+  const response = await fetch('/api/products', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({
+    product_id: document.getElementById('product-id').value.trim(), name: document.getElementById('name').value.trim(),
+    available_stock: Number(document.getElementById('stock').value), unit_price: document.getElementById('price').value,
+    tax_percentage: document.getElementById('tax').value
+  })});
+  if (!response.ok) { document.getElementById('error').textContent = (await response.json()).detail || 'Create failed'; return; }
+  e.target.reset(); document.getElementById('error').textContent = ''; await loadProducts();
+};
+loadProducts();
+</script>
+{% endblock %}

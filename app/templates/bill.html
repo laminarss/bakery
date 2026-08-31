@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+{% block title %}Invoice{% endblock %}
+{% block content %}
+<h1>Billing Page</h1>
+<div id="invoice">Loading...</div>
+<script>
+const billId = {{ bill_id }};
+const escapeHtml = value => String(value).replace(/[&<>\"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','\"':'&quot;',"'":'&#39;'}[c]));
+fetch(`/api/bills/${billId}`).then(r => r.json()).then(bill => {
+  if (bill.detail) throw new Error(bill.detail);
+  document.getElementById('invoice').innerHTML = `
+    <p><strong>Customer Email:</strong> ${escapeHtml(bill.customer_email)}</p>
+    <table><thead><tr><th>Product ID</th><th>Unit Price</th><th>Quantity</th><th>Purchase Price</th><th>Tax %</th><th>Tax Amount</th><th>Total</th></tr></thead>
+    <tbody>${bill.items.map(i => `<tr><td>${escapeHtml(i.product_id)}</td><td>₹${escapeHtml(i.unit_price)}</td><td>${escapeHtml(i.quantity)}</td><td>₹${escapeHtml(i.purchase_price)}</td><td>${escapeHtml(i.tax_percentage)}%</td><td>₹${escapeHtml(i.tax_amount)}</td><td>₹${escapeHtml(i.total_price)}</td></tr>`).join('')}</tbody></table>
+    <section class="totals">
+      <div>Total price without tax: <strong>₹${escapeHtml(bill.total_before_tax)}</strong></div>
+      <div>Total tax payable: <strong>₹${escapeHtml(bill.total_tax)}</strong></div>
+      <div>Net price of purchased items: <strong>₹${escapeHtml(bill.net_payable)}</strong></div>
+      <div>Rounded down value: <strong>₹${escapeHtml(bill.rounded_down_payable)}</strong></div>
+      <div>Amount paid: <strong>₹${escapeHtml(bill.amount_paid)}</strong></div>
+      <div>Balance payable to customer: <strong>₹${escapeHtml(bill.change_due)}</strong></div>
+    </section>
+    <h2>Balance Denomination</h2>
+    <ul>${Object.entries(bill.change_denominations).map(([value,count]) => `<li>₹${value}: ${count}</li>`).join('') || '<li>No change</li>'}</ul>`;
+}).catch(e => document.getElementById('invoice').textContent = e.message);
+</script>
+{% endblock %}

@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% block title %}Purchase History{% endblock %}
+{% block content %}
+<h1>Previous Purchases</h1>
+<form id="history-form"><input id="email" type="email" placeholder="Customer email" required><button>Search</button></form>
+<p id="error" class="error"></p>
+<div id="results"></div>
+<script>
+document.getElementById('history-form').onsubmit = async e => {
+  e.preventDefault();
+  const email = document.getElementById('email').value;
+  const response = await fetch(`/api/purchases?email=${encodeURIComponent(email)}`);
+  const data = await response.json();
+  if (!response.ok) { document.getElementById('error').textContent = data.detail || 'Search failed'; return; }
+  document.getElementById('results').innerHTML = data.length ? `<table><thead><tr><th>Bill</th><th>Date</th><th>Total</th><th>Paid</th><th>Change</th><th></th></tr></thead><tbody>${data.map(b => `<tr><td>#${b.id}</td><td>${new Date(b.created_at).toLocaleString()}</td><td>₹${b.net_payable}</td><td>₹${b.amount_paid}</td><td>₹${b.change_due}</td><td><a href="/bills/${b.id}">View</a></td></tr>`).join('')}</tbody></table>` : '<p>No purchases found.</p>';
+};
+</script>
+{% endblock %}
